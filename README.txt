@@ -12,7 +12,7 @@ TWILIO_ACCOUNT_SID
 TWILIO_ACCOUNT_AUTH
 TWILIO_PHONE_NUMBER
 'name-of-channel-to-monitor'
-admin
+'admin username'
 
 
 NOTES:
@@ -21,6 +21,7 @@ NOTES:
     - Note: you must authorize this app + bot in your channel by using the OAuth2 tab
 - name-of-channel-to-monitor is the channel name exactly as it appears in discord, excluding the leading '#'
 - admin is the only user who can use commands: !sms and !showlist
+- admin username must be full, unique, username. Not your nickname specific to the channel
 
 HELP:
 - If the bot loads but nothing happens when a message is sent in the channel, ensure the specific channel
