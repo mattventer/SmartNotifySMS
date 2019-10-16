@@ -27,6 +27,7 @@ HELP:
 - If the bot loads but nothing happens when a message is sent in the channel, ensure the specific channel
     to be monitored is spelled correctly in 'keys.txt' and in the correct location. All other channels
     will be ignored except the one specified in 'keys.txt'.
+    **YOU MUST GIVE THE BOT PERMISSION TO RUN IN THIS CHANNEL**
 
 
 Written by Matthew Venter
