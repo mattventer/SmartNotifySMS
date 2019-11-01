@@ -1,4 +1,4 @@
-*SmartNotify Twitter Success Post Bot:
+* SmartNotify Twitter Success Post Bot:
 
 FIRST TIME USE: You must have python3 installed on your machine with pip
     - use 'pip3 install -r requirements.txt' to install required dependencies
