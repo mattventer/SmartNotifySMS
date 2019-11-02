@@ -1,4 +1,0 @@
-async-timeout==3.0.1
-discord.py==1.2.3
-twilio==6.29.4
-phonenumbers==8.10.19
