@@ -189,7 +189,7 @@ async def on_message(msg):
         return
     elif str(msg.channel) == SMS_CHANNEL:
         # Print incoming messages to local terminal
-        print("**%s** %s : %s" % (msg.channel, msg.author.name, msg.content))
+        #print("**%s** %s : %s" % (msg.channel, msg.author.name, msg.content))
         if msg.content.startswith('!commands'):
             await msg.channel.send(embed=myembed)
         elif msg.content.startswith('!showlist'):
