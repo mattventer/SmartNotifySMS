@@ -7,8 +7,16 @@ from twilio.rest import Client as TwilioClient
 import time
 from timeit import default_timer as timer
 import phonenumbers as phone
+import logging
 
-# Logging
+now = datetime.now()
+time_stamp = now.strftime("%m/%d/%Y %H:%M:%S")
+
+# Error logging
+logging.basicConfig(filename='src/smartnotifysms.log', level=logging.INFO)
+logging.info(f'Starting new session: {time_stamp}')
+
+# Data Logging
 data_file = 'src/numbers.txt'
 key_file = 'src/keys.txt'
 line0 = 'user,number\n'
@@ -32,44 +40,31 @@ try:
         content = [x.strip() for x in content]
         f.close()
 except:
-    print("Could not load info from keys.txt. Check formatting in README.txt")
-try:
-    CHANNEL_TOKEN = content[0]
-except:
-    print('Error: Could not get Discord Token from keys.txt')
-try:
-    twil_account_sid = content[1]
-except:
-    print('Error: Could not get Twilio Account SID from keys.txt')
-try:
-    twil_auth_token= content[2]
-except:
-    print('Error: Could not get Twilio Auth Token from keys.txt')
-try:
-    twil_num = content[3]
-except:
-    print('Error: Could not get Twilio phone number from keys.txt')
-try:
-    SMS_CHANNEL = content[4]
-except:
-    print('Error: Could not get channel name from keys.txt')
-try:
-    admin = content[5]
-except:
-     print('Error: Could not get admin from keys.txt')
-
-
-
+    logging.error("Could not load info from keys.txt. Check formatting in README.txt")
+    exit()
+else:
+    if len(content == 6):
+        CHANNEL_TOKEN = content[0]
+        twil_account_sid = content[1]
+        twil_auth_token= content[2]
+        twil_num = content[3]
+        SMS_CHANNEL = content[4]
+        admin = content[5]
+        logging.info('Loaded keys.')
+    else:
+        logging.error('Error in formatting of keys.txt. Not 6 tokens to read.')
+        exit()
 
 # Discord
 try:
     client = discord.Client()
 except:
-    print('Error: Incorrect Discord Key')
+    logging.error('Incorrect Discord Key')
 myembed = discord.Embed(
     title="SmartNotify SMS Commands:", description="Instructions: ", color=0xf16868)
 myembed.add_field(name='!addnumber: add number to list', value='- You will receive a DM with instructions', inline=False)
-myembed.set_footer(text="By SmartNotify")
+myembed.set_footer(text="By SmartNotify\t\t" + str(time_stamp), icon_url="https://cdn.discordapp.com/attachments/628750460949364757/631225789538500608/unknown.png")
+myembed.set_thumbnail(url="https://cdn.discordapp.com/attachments/628750460949364757/631226140601876540/New_logo.png")
 
 
 
@@ -121,21 +116,20 @@ def in_list(author, list):
 
 
 def readData(f):
-    print("Populating data...")
+    logging.info("Populating user/number data...")
     with open(f, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         line_count = 0
         for row in csv_reader:
             # First line used as dictionary keys
             if line_count == 0:
-                print(f'Column names are {", ".join(row)}:')
-                print("Adding contacts to list...\n")
+                logging.info(f'Column names are {", ".join(row)}:')
                 line_count += 1  # Auto iterates to next line after keys
             new_person = Person(row['user'], row['number'])
             contact_list.append(new_person)
-            print(str(line_count) + ": " + new_person.getInfo())
+            logging.info(str(line_count) + ": " + new_person.getInfo())
             line_count += 1
-        print(f'\nProcessed {line_count - 1} lines from {f}')
+        logging.info(f'\nProcessed {line_count - 1} lines from {f}')
         csv_file.close()
 
 # Writes updated list to data file
@@ -148,7 +142,7 @@ def updateDataFile(f, contact_list):
             out_file.write(contact.getName() + "," +
                            contact.getNumber() + "\n")
         out_file.close()
-        print("numbers.txt updated")
+        logging.info(f"numbers.txt updated with {contact.getName()},{contact.getNumber()}")
 
 
 def massSendSMS(msg, contacts):
@@ -159,19 +153,18 @@ def massSendSMS(msg, contacts):
     output = None
     for user in contacts:
         try:
-            print("Sending message to " + user.getName() + " " + msg)
+            logging.info("Sending message to " + user.getName() + " " + msg)
             twilio_client.messages.create(
                 body=msg, from_=twil_num, to=user.getNumber())
         except:
-            output = "FAIL"
+            logging.info(f'Failed: {user.getName()}: {user.getNumber()}')
             failCount += 1
         else:
-            output = "SUCCESS"
+            logging.info(f'Success: {user.getName()}: {user.getNumber()}')
             successCount += 1
-        print(output)
         count += 1
         time.sleep(0.3)
-    print("\nSuccessful: " + str(successCount) + "\nFailed: " + str(failCount))
+    logging.info("\nSuccessful: " + str(successCount) + "\nFailed: " + str(failCount))
 
 def isAdmin(author):
     if author == admin:
@@ -250,11 +243,10 @@ async def on_message(msg):
 
 @client.event
 async def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('Monitoring Channel: %s' % SMS_CHANNEL)
-    print('------')
+    logging.info('Logged in as')
+    logging.info(client.user.name)
+    logging.info(client.user.id)
+    logging.info('Monitoring Channel: %s' % SMS_CHANNEL)
     readData(data_file)  # Populate contacts from data file
 
 client.run(CHANNEL_TOKEN)
