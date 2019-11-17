@@ -8,7 +8,7 @@ import time
 from timeit import default_timer as timer
 import phonenumbers as phone
 import logging
-
+from datetime import datetime
 
 
 # Error logging
@@ -21,6 +21,46 @@ line0 = 'user,number\n'
 contact_list = []  # Stores contacts collected
 # Stores channel names of unfinished user number-add requests
 awaiting_channel_resp = []
+
+# Person holds the username, phone number
+class Person:
+    username = None
+    number = None
+
+    def __init__(self, name, num):
+        self.username = name
+        self.number = num
+
+    def getName(self):
+        return self.username
+
+    def getNumber(self):
+        return self.number
+
+    def getInfo(self):
+        return 'User: ' + self.getName() + "\t Phone: " + self.getNumber()
+
+def readData(f):
+    logging.info("Populating user/number data...")
+    with open(f, mode='r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        line_count = 0
+        for row in csv_reader:
+            # First line used as dictionary keys
+            if line_count == 0:
+                logging.info(f'Column names are {", ".join(row)}:')
+                line_count += 1  # Auto iterates to next line after keys
+            new_person = Person(row['user'], row['number'])
+            contact_list.append(new_person)
+            logging.info(str(line_count) + ": " + new_person.getInfo())
+            line_count += 1
+        logging.info(f'\nProcessed {line_count - 1} lines from {f}')
+        csv_file.close()
+
+
+readData(data_file)  # Populate contacts from data file
+
+
 
 #Discord keys
 CHANNEL_TOKEN = None
@@ -41,7 +81,7 @@ except:
     logging.error("Could not load info from keys.txt. Check formatting in README.txt")
     exit()
 else:
-    if len(content == 6):
+    if len(content) == 6:
         CHANNEL_TOKEN = content[0]
         twil_account_sid = content[1]
         twil_auth_token= content[2]
@@ -54,39 +94,22 @@ else:
         exit()
 
 # Discord
-try:
-    client = discord.Client()
-except:
-    logging.error('Incorrect Discord Key')
+client = discord.Client()
+
+
 myembed = discord.Embed(
     title="SmartNotify SMS Commands:", description="Instructions: ", color=0xf16868)
 myembed.add_field(name='!addnumber: add number to list', value='- You will receive a DM with instructions', inline=False)
 myembed.set_thumbnail(url="https://cdn.discordapp.com/attachments/628750460949364757/631226140601876540/New_logo.png")
+myembed.set_footer(text="By SmartNotify", icon_url="https://cdn.discordapp.com/attachments/628750460949364757/631225789538500608/unknown.png")
 
+
+    
 
 
 
 ###########################################################################################
 # Helper Functions - to be moved to another file
-# Person holds the username, phone number
-
-
-class Person:
-    username = None
-    number = None
-
-    def __init__(self, name, num):
-        self.username = name
-        self.number = num
-
-    def getName(self):
-        return self.username
-
-    def getNumber(self):
-        return self.number
-
-    def getInfo(self):
-        return 'User: ' + self.getName() + "\t Phone: " + self.getNumber()
 
 # Print the username and number to the Discord Channel passed
 
@@ -111,23 +134,6 @@ def in_list(author, list):
 # Populate saved data, to be run at start
 # Read from file to populate contact list
 
-
-def readData(f):
-    logging.info("Populating user/number data...")
-    with open(f, mode='r') as csv_file:
-        csv_reader = csv.DictReader(csv_file)
-        line_count = 0
-        for row in csv_reader:
-            # First line used as dictionary keys
-            if line_count == 0:
-                logging.info(f'Column names are {", ".join(row)}:')
-                line_count += 1  # Auto iterates to next line after keys
-            new_person = Person(row['user'], row['number'])
-            contact_list.append(new_person)
-            logging.info(str(line_count) + ": " + new_person.getInfo())
-            line_count += 1
-        logging.info(f'\nProcessed {line_count - 1} lines from {f}')
-        csv_file.close()
 
 # Writes updated list to data file
 
@@ -174,9 +180,6 @@ def isAdmin(author):
 # Event handling
 @client.event
 async def on_message(msg):
-    now = datetime.now()
-    time_stamp = now.strftime("%m/%d/%Y %H:%M:%S")
-    myembed.set_footer(text="By SmartNotify\t\t" + str(time_stamp), icon_url="https://cdn.discordapp.com/attachments/628750460949364757/631225789538500608/unknown.png")
     # Do not want the bot to reply to itself
     if msg.author == client.user:
         return
@@ -244,9 +247,8 @@ async def on_message(msg):
 @client.event
 async def on_ready():
     logging.info('Logged in as')
-    logging.info(client.user.name)
-    logging.info(client.user.id)
-    logging.info('Monitoring Channel: %s' % SMS_CHANNEL)
-    readData(data_file)  # Populate contacts from data file
+    logging.info(f'{client.user.name}')
+    logging.info(f'{client.user.id}')
+    logging.info(f'Monitoring Channel: {SMS_CHANNEL}')
 
 client.run(CHANNEL_TOKEN)
