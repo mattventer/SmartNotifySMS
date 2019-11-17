@@ -9,12 +9,10 @@ from timeit import default_timer as timer
 import phonenumbers as phone
 import logging
 
-now = datetime.now()
-time_stamp = now.strftime("%m/%d/%Y %H:%M:%S")
+
 
 # Error logging
 logging.basicConfig(filename='src/smartnotifysms.log', level=logging.INFO)
-logging.info(f'Starting new session: {time_stamp}')
 
 # Data Logging
 data_file = 'src/numbers.txt'
@@ -63,7 +61,6 @@ except:
 myembed = discord.Embed(
     title="SmartNotify SMS Commands:", description="Instructions: ", color=0xf16868)
 myembed.add_field(name='!addnumber: add number to list', value='- You will receive a DM with instructions', inline=False)
-myembed.set_footer(text="By SmartNotify\t\t" + str(time_stamp), icon_url="https://cdn.discordapp.com/attachments/628750460949364757/631225789538500608/unknown.png")
 myembed.set_thumbnail(url="https://cdn.discordapp.com/attachments/628750460949364757/631226140601876540/New_logo.png")
 
 
@@ -177,6 +174,9 @@ def isAdmin(author):
 # Event handling
 @client.event
 async def on_message(msg):
+    now = datetime.now()
+    time_stamp = now.strftime("%m/%d/%Y %H:%M:%S")
+    myembed.set_footer(text="By SmartNotify\t\t" + str(time_stamp), icon_url="https://cdn.discordapp.com/attachments/628750460949364757/631225789538500608/unknown.png")
     # Do not want the bot to reply to itself
     if msg.author == client.user:
         return
