@@ -12,7 +12,8 @@ from datetime import datetime
 
 
 # Error logging
-logging.basicConfig(filename='src/smartnotifysms.log', level=logging.INFO)
+logging.basicConfig(filename='src/smartnotifysms.log', level=logging.INFO,
+                    format = '%(asctime)s %(levelname)-8s %(message)s',datefmt='%Y-%m-%d %H:%M:%S')
 
 # Data Logging
 data_file = 'src/numbers.txt'
