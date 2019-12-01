@@ -55,7 +55,7 @@ def readData(f):
             contact_list.append(new_person)
             logging.info(str(line_count) + ": " + new_person.getInfo())
             line_count += 1
-        logging.info(f'\nProcessed {line_count - 1} lines from {f}')
+        logging.info(f'Processed {line_count - 1} lines from {f}')
         csv_file.close()
 
 
